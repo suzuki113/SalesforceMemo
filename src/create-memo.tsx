@@ -54,7 +54,7 @@ export default function CreateMemo() {
     setRelatedRecord(record);
     // 設定後の値をログに出力して確認
     setTimeout(() => {
-      console.log("メイン画面でレコード設定後:", { relatedRecord });
+      console.log("メイン画面でレコード設定後:", { record });
     }, 100);
   };
 
