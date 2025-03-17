@@ -3,6 +3,23 @@ import React, { useState } from "react";
 import { ActionPanel, Form, Action, showToast, Toast, Icon, Detail, useNavigation, List } from "@raycast/api";
 import { SalesforceService, MemoFileService, SalesforceRecord } from "./utils/salesforce";
 
+// メモデータの型定義
+interface MemoData {
+  title: string;
+  content: string;
+  metadata: {
+    createdAt?: string;
+    updatedAt?: string;
+    sfId?: string;
+    sfName?: string;
+    sfType?: string;
+  };
+  syncStatus?: {
+    lastSyncedAt: string | null;
+    sfNoteId: string | null;
+  };
+}
+
 export default function CreateMemo() {
   const [isLoading, setIsLoading] = useState(false);
   const [title, setTitle] = useState("");
@@ -236,9 +253,10 @@ function MemoDetail({
       console.log("Salesforce送信前のメモデータ:", originalData);
 
       // Salesforceにメモを作成
+      const typedData = originalData as unknown as MemoData;
       const memoId = await salesforceService.createMemoRecord(
-        (originalData as any).title || title,
-        (originalData as any).content || content,
+        typedData.title || title,
+        typedData.content || content,
         relatedRecord?.Id,
       );
 
@@ -275,32 +293,33 @@ function MemoDetail({
         return `# ${title}\n\n${content}\n\n---\n\n**ファイル保存場所**: ${filePath}\n${relatedRecord ? `**関連レコード**: ${relatedRecord.Type} - ${relatedRecord.Name} (${relatedRecord.Id})` : ""}`;
       }
 
-      const jsonTitle = (originalData as any).title || title;
-      const jsonContent = (originalData as any).content || content;
-      const metadata = (originalData as any).metadata || {};
+      const typedData = originalData as unknown as MemoData;
+      const jsonTitle = typedData.title || title;
+      const jsonContent = typedData.content || content;
+      const metadata = typedData.metadata || {};
 
       // メタデータセクション
       let metadataSection = "";
-      if (relatedRecord || (metadata as any).sfId) {
+      if (relatedRecord || metadata.sfId) {
         metadataSection += `\n\n## 関連レコード情報\n`;
         if (relatedRecord) {
           metadataSection += `- **タイプ**: ${relatedRecord.Type || "不明"}\n`;
           metadataSection += `- **名前**: ${relatedRecord.Name || "不明"}\n`;
           metadataSection += `- **ID**: ${relatedRecord.Id}\n`;
-        } else if ((metadata as any).sfId) {
-          metadataSection += `- **タイプ**: ${(metadata as any).sfType || "不明"}\n`;
-          metadataSection += `- **名前**: ${(metadata as any).sfName || "不明"}\n`;
-          metadataSection += `- **ID**: ${(metadata as any).sfId}\n`;
+        } else if (metadata.sfId) {
+          metadataSection += `- **タイプ**: ${metadata.sfType || "不明"}\n`;
+          metadataSection += `- **名前**: ${metadata.sfName || "不明"}\n`;
+          metadataSection += `- **ID**: ${metadata.sfId}\n`;
         }
       }
 
       // 作成・更新日時
       let dateSection = "\n\n## 日時情報\n";
-      if ((metadata as any).createdAt) {
-        dateSection += `- **作成日時**: ${new Date((metadata as any).createdAt).toLocaleString()}\n`;
+      if (metadata.createdAt) {
+        dateSection += `- **作成日時**: ${new Date(metadata.createdAt).toLocaleString()}\n`;
       }
-      if ((metadata as any).updatedAt) {
-        dateSection += `- **更新日時**: ${new Date((metadata as any).updatedAt).toLocaleString()}\n`;
+      if (metadata.updatedAt) {
+        dateSection += `- **更新日時**: ${new Date(metadata.updatedAt).toLocaleString()}\n`;
       }
 
       return `# ${jsonTitle}\n\n${jsonContent}\n\n---\n\n**ファイル保存場所**: ${filePath}\n${relatedRecord ? `**関連レコード**: ${relatedRecord.Type} - ${relatedRecord.Name} (${relatedRecord.Id})` : ""}\n${metadataSection}\n${dateSection}`;
