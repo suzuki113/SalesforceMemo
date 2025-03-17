@@ -4,7 +4,7 @@
   "title": "Salesforce Memo",
   "description": "Create, manage and sync memos with Salesforce. Store memos in JSON format and link them to Salesforce records.",
   "icon": "icon.png",
-  "author": "Yusuke Suzuki",
+  "author": "dd.suzuki",
   "categories": [
     "Applications",
     "Productivity"
