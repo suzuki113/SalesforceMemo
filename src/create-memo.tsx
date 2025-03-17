@@ -6,28 +6,20 @@ import {
   showToast,
   Toast,
   Icon,
-  getPreferenceValues,
   Detail,
   useNavigation,
   List,
 } from "@raycast/api";
 import { SalesforceService, MemoFileService, SalesforceRecord } from "./utils/salesforce";
-import fs from "fs";
-
-interface Preferences {
-  memoDirectory: string;
-}
 
 export default function CreateMemo() {
   const [isLoading, setIsLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [relatedRecord, setRelatedRecord] = useState<SalesforceRecord | undefined>(undefined);
-  const { push, pop } = useNavigation();
+  const { push } = useNavigation();
 
-  const salesforceService = new SalesforceService();
   const memoFileService = new MemoFileService();
-  const preferences = getPreferenceValues<Preferences>();
 
   const handleRecordSelect = () => {
     push(<RecordSearch onRecordSelect={selectRecord} />);
@@ -236,7 +228,7 @@ function MemoDetail({
   filePath: string;
   relatedRecord?: SalesforceRecord;
 }) {
-  const [isUploading, setIsUploading] = useState(false);
+  const [, setIsUploading] = useState(false);
   const salesforceService = new SalesforceService();
   const memoFileService = new MemoFileService();
 
@@ -295,7 +287,6 @@ function MemoDetail({
       const jsonTitle = originalData.title || title;
       const jsonContent = originalData.content || content;
       const metadata = originalData.metadata || {};
-      const syncStatus = originalData.syncStatus || { lastSyncedAt: null, sfNoteId: null };
 
       // メタデータセクション
       let metadataSection = "";
@@ -321,32 +312,20 @@ function MemoDetail({
         dateSection += `- **更新日時**: ${new Date(metadata.updatedAt).toLocaleString()}\n`;
       }
 
-      // 同期情報
-      let syncSection = "";
-      if (syncStatus.lastSyncedAt) {
-        syncSection += `\n\n## Salesforce同期情報\n`;
-        syncSection += `- **最終同期**: ${new Date(syncStatus.lastSyncedAt).toLocaleString()}\n`;
-        syncSection += `- **Salesforce ID**: ${syncStatus.sfNoteId || "不明"}\n`;
-      }
-
-      // ファイル情報
-      const fileSection = `\n\n## ファイル情報\n- **保存場所**: ${filePath}`;
-
-      return `# ${jsonTitle}\n\n${jsonContent}${metadataSection}${dateSection}${syncSection}${fileSection}`;
+      return `# ${jsonTitle}\n\n${jsonContent}\n\n---\n\n**ファイル保存場所**: ${filePath}\n${relatedRecord ? `**関連レコード**: ${relatedRecord.Type} - ${relatedRecord.Name} (${relatedRecord.Id})` : ""}\n${metadataSection}\n${dateSection}`;
     } catch (error) {
-      console.error("メモ表示データ作成エラー:", error);
-      return `# ${title}\n\n${content}\n\n---\n\n**エラー**: メモデータの読み込み中にエラーが発生しました\n**ファイル保存場所**: ${filePath}`;
+      console.error("マークダウンコンテンツ作成エラー:", error);
+      return `# ${title}\n\n${content}\n\n---\n\n**ファイル保存場所**: ${filePath}\n${relatedRecord ? `**関連レコード**: ${relatedRecord.Type} - ${relatedRecord.Name} (${relatedRecord.Id})` : ""}`;
     }
   };
 
-  const markdownContent = createMarkdownContent();
-
   return (
     <Detail
-      markdown={markdownContent}
-      isLoading={isUploading}
+      markdown={createMarkdownContent()}
       actions={
         <ActionPanel>
+          <Action.SubmitForm title="メモを保存" onSubmit={handleSubmit} icon={Icon.Document} />
+          <Action title="関連レコードを選択" onAction={handleRecordSelect} icon={Icon.Link} />
           <Action title="Salesforceに送信" onAction={uploadToSalesforce} icon={Icon.Upload} />
         </ActionPanel>
       }
