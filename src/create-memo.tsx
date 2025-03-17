@@ -284,7 +284,7 @@ function MemoDetail({
   filePath: string;
   relatedRecord?: SalesforceRecord;
 }) {
-  const [, setIsUploading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const salesforceService = new SalesforceService();
   const memoFileService = new MemoFileService();
 
@@ -380,6 +380,7 @@ function MemoDetail({
   return (
     <Detail
       markdown={createMarkdownContent()}
+      isLoading={isUploading}
       actions={
         <ActionPanel>
           <Action
