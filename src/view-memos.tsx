@@ -266,7 +266,7 @@ function MemoDetail({ memo }: { memo: MemoItem }) {
       );
 
       // 送信成功後、同期ステータスを更新
-      const updated = memoFileService.updateSyncStatus(memo.path, memoId);
+      const updated = await memoFileService.updateSyncStatus(memo.path, memoId);
       if (updated) {
         console.log("同期ステータスを更新しました:", memoId);
       }
@@ -412,7 +412,7 @@ function EditMemo({ memo }: { memo: MemoItem }) {
       const fileContent = JSON.stringify(updatedData, null, 2);
 
       // 同じファイルパスに上書き保存
-      fs.writeFileSync(memo.path, fileContent, { encoding: "utf8" });
+      await fs.promises.writeFile(memo.path, fileContent, { encoding: "utf8" });
 
       // ファイル書き込み後に確認
       console.log(`メモ更新完了: ${memo.path} (JSON形式)`);

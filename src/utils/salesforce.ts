@@ -324,11 +324,11 @@ export class MemoFileService {
   }
 
   // メモをローカルに保存（JSON形式）
-  saveMemo(
+  async saveMemo(
     title: string,
     content: string,
     relatedRecord?: SalesforceRecord,
-  ): string {
+  ): Promise<string> {
     const memoDir = this.preferences.memoDirectory;
 
     // タイムスタンプをファイル名に使用
@@ -366,7 +366,7 @@ export class MemoFileService {
     const jsonContent = JSON.stringify(memoData, null, 2);
 
     // UTF-8で保存
-    fs.writeFileSync(filePath, jsonContent, { encoding: "utf8" });
+    await fs.promises.writeFile(filePath, jsonContent, { encoding: "utf8" });
 
     // ファイル書き込み後に確認
     console.log(`JSONファイル保存完了: ${filePath} (UTF-8形式)`);
@@ -425,7 +425,7 @@ export class MemoFileService {
   }
 
   // Salesforceに送信後、送信ステータスを更新
-  updateSyncStatus(filePath: string, sfNoteId: string): boolean {
+  async updateSyncStatus(filePath: string, sfNoteId: string): Promise<boolean> {
     try {
       // ファイル拡張子を確認
       const isJsonFile = filePath.toLowerCase().endsWith(".json");
@@ -438,7 +438,7 @@ export class MemoFileService {
       }
 
       // ファイル読み込み
-      const fileContent = fs.readFileSync(filePath, { encoding: "utf8" });
+      const fileContent = await fs.promises.readFile(filePath, { encoding: "utf8" });
       const content =
         fileContent.charCodeAt(0) === 0xfeff
           ? fileContent.substring(1)
@@ -454,7 +454,7 @@ export class MemoFileService {
 
         // 更新したデータを保存
         const updatedContent = JSON.stringify(memoData, null, 2);
-        fs.writeFileSync(filePath, updatedContent, { encoding: "utf8" });
+        await fs.promises.writeFile(filePath, updatedContent, { encoding: "utf8" });
 
         console.log(
           `同期ステータスを更新しました: ${filePath}, sfNoteId=${sfNoteId}`,

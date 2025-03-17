@@ -69,7 +69,7 @@ export default function CreateMemo() {
     setIsLoading(true);
     try {
       // メモをローカルに保存
-      const filePath = memoFileService.saveMemo(
+      const filePath = await memoFileService.saveMemo(
         values.title,
         values.content,
         relatedRecord,
@@ -309,7 +309,7 @@ function MemoDetail({
       );
 
       // 送信成功後、同期ステータスを更新
-      const updated = memoFileService.updateSyncStatus(filePath, memoId);
+      const updated = await memoFileService.updateSyncStatus(filePath, memoId);
       if (updated) {
         console.log("同期ステータスを更新しました:", memoId);
       }
