@@ -58,7 +58,7 @@
       "title": "Salesforce Object Type",
       "description": "The Salesforce object type to use for storing memos",
       "type": "dropdown",
-      "required": false,
+      "required": true,
       "default": "ContentNote",
       "data": [
         {
