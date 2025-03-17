@@ -326,7 +326,11 @@ export class MemoFileService {
   }
 
   // 保存済みのメモを読み込む（JSON形式のみに対応）
-  readMemo(filePath: string): { content: string; metadata: Record<string, unknown>; originalData?: Record<string, unknown> } {
+  readMemo(filePath: string): {
+    content: string;
+    metadata: Record<string, unknown>;
+    originalData?: Record<string, unknown>;
+  } {
     try {
       // ファイル拡張子を確認
       if (!filePath.toLowerCase().endsWith(".json")) {
