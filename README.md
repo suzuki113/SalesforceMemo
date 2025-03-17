@@ -78,4 +78,4 @@ Version: 1.0.0
 
 ## Support
 
-If you encounter any issues or have questions, please contact the developer.
+If you encounter any issues or have questions, please open an issue on the GitHub repository or contact the developer through Raycast's support channels.
