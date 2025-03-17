@@ -10,6 +10,7 @@ import {
   useNavigation,
   List,
 } from "@raycast/api";
+import { showFailureToast } from "@raycast/utils";
 import {
   SalesforceService,
   MemoFileService,
@@ -68,11 +69,7 @@ export default function CreateMemo() {
 
   const handleSubmit = async (values: { title: string; content: string }) => {
     if (!values.title || !values.content) {
-      await showToast({
-        style: Toast.Style.Failure,
-        title: "Input Error",
-        message: "Please enter both title and content",
-      });
+      await showFailureToast("Please enter both title and content");
       return;
     }
 
