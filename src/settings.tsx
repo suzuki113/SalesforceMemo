@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React, { useState, useEffect } from "react";
 import {
   ActionPanel,
@@ -94,7 +93,8 @@ export default function Settings() {
       await showToast({
         style: Toast.Style.Failure,
         title: "Setup Error",
-        message: "Please configure the required settings in Raycast preferences",
+        message:
+          "Please configure the required settings in Raycast preferences",
       });
       return;
     }

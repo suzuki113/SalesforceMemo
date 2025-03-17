@@ -280,8 +280,13 @@ export class SalesforceService {
               );
 
               if (!linkResult.success) {
-                console.error("Failed to create related record link:", linkResult);
-                throw new Error("Failed to create relationship between memo and record");
+                console.error(
+                  "Failed to create related record link:",
+                  linkResult,
+                );
+                throw new Error(
+                  "Failed to create relationship between memo and record",
+                );
               }
             } else if (objectName === "Task") {
               // Taskの場合はWhatIdを使用して関連付け

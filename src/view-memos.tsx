@@ -49,15 +49,15 @@ interface MemoData {
 
 // Type guard function to verify MemoData structure
 function isMemoData(data: unknown): data is MemoData {
-  if (!data || typeof data !== 'object') return false;
-  
+  if (!data || typeof data !== "object") return false;
+
   const memo = data as Record<string, unknown>;
-  
+
   return (
-    typeof memo.title === 'string' &&
-    typeof memo.content === 'string' &&
+    typeof memo.title === "string" &&
+    typeof memo.content === "string" &&
     memo.metadata !== undefined &&
-    typeof memo.metadata === 'object'
+    typeof memo.metadata === "object"
   );
 }
 
