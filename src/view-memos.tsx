@@ -47,6 +47,20 @@ interface MemoData {
   };
 }
 
+// Type guard function to verify MemoData structure
+function isMemoData(data: unknown): data is MemoData {
+  if (!data || typeof data !== 'object') return false;
+  
+  const memo = data as Record<string, unknown>;
+  
+  return (
+    typeof memo.title === 'string' &&
+    typeof memo.content === 'string' &&
+    memo.metadata !== undefined &&
+    typeof memo.metadata === 'object'
+  );
+}
+
 export default function ViewMemos() {
   const [isLoading, setIsLoading] = useState(true);
   const [memos, setMemos] = useState<MemoItem[]>([]);
@@ -202,11 +216,14 @@ function MemoDetail({ memo }: { memo: MemoItem }) {
       return "Failed to load memo data";
     }
 
-    const typedData = originalData as unknown as MemoData;
-    const title = typedData.title || "No Title";
-    const content = typedData.content || "";
-    const metadata = typedData.metadata || {};
-    const syncStatus = typedData.syncStatus || {
+    if (!isMemoData(originalData)) {
+      return "Invalid memo data format";
+    }
+
+    const title = originalData.title || "No Title";
+    const content = originalData.content || "";
+    const metadata = originalData.metadata || {};
+    const syncStatus = originalData.syncStatus || {
       lastSyncedAt: null,
       sfNoteId: null,
     };
@@ -251,11 +268,15 @@ function MemoDetail({ memo }: { memo: MemoItem }) {
 
       console.log("Memo data before sending to Salesforce:", originalData);
 
+      // Safely validate and use memo data with type guard
+      if (!isMemoData(originalData)) {
+        throw new Error("Invalid memo data format");
+      }
+
       // Get title and content to send
-      const typedData = originalData as unknown as MemoData;
-      const title = typedData.title || memo.title;
-      const content = typedData.content || "";
-      const metadata = typedData.metadata || {};
+      const title = originalData.title || memo.title;
+      const content = originalData.content || "";
+      const metadata = originalData.metadata || {};
 
       // Create memo in Salesforce
       const memoId = await salesforceService.createMemoRecord(

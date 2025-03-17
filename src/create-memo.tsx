@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React, { useState } from "react";
 import {
   ActionPanel,
@@ -32,6 +31,20 @@ interface MemoData {
     lastSyncedAt: string | null;
     sfNoteId: string | null;
   };
+}
+
+// Type guard function to verify MemoData structure
+function isMemoData(data: unknown): data is MemoData {
+  if (!data || typeof data !== 'object') return false;
+  
+  const memo = data as Record<string, unknown>;
+  
+  return (
+    typeof memo.title === 'string' &&
+    typeof memo.content === 'string' &&
+    memo.metadata !== undefined &&
+    typeof memo.metadata === 'object'
+  );
 }
 
 export default function CreateMemo() {
@@ -300,11 +313,14 @@ function MemoDetail({
 
       console.log("Memo data before sending to Salesforce:", originalData);
 
-      // Create memo in Salesforce
-      const typedData = originalData as unknown as MemoData;
+      // Safely validate and use memo data with type guard
+      if (!isMemoData(originalData)) {
+        throw new Error("Invalid memo data format");
+      }
+      
       const memoId = await salesforceService.createMemoRecord(
-        typedData.title || title,
-        typedData.content || content,
+        originalData.title || title,
+        originalData.content || content,
         relatedRecord?.Id,
       );
 
@@ -341,10 +357,14 @@ function MemoDetail({
         return `# ${title}\n\n${content}\n\n---\n\n**File Location**: ${filePath}\n${relatedRecord ? `**Related Record**: ${relatedRecord.Type} - ${relatedRecord.Name} (${relatedRecord.Id})` : ""}`;
       }
 
-      const typedData = originalData as unknown as MemoData;
-      const jsonTitle = typedData.title || title;
-      const jsonContent = typedData.content || content;
-      const metadata = typedData.metadata || {};
+      if (!isMemoData(originalData)) {
+        console.error("Invalid memo data format in createMarkdownContent");
+        return `# ${title}\n\n${content}\n\n---\n\n**File Location**: ${filePath}\n${relatedRecord ? `**Related Record**: ${relatedRecord.Type} - ${relatedRecord.Name} (${relatedRecord.Id})` : ""}`;
+      }
+
+      const jsonTitle = originalData.title || title;
+      const jsonContent = originalData.content || content;
+      const metadata = originalData.metadata || {};
 
       // Metadata section
       let metadataSection = "";
