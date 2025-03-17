@@ -1,0 +1,79 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "salesforce-memo",
+  "title": "Salesforce Memo",
+  "description": "メモを作成して管理し、Salesforceと連携するための拡張機能です。JSONフォーマットでメモを保存し、Salesforceのレコードと関連付けることができます。",
+  "icon": "extension-icon.png",
+  "author": "suzukiyuusuke",
+  "categories": [
+    "Applications",
+    "Productivity"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "commands": [
+    {
+      "name": "create-memo",
+      "title": "Create Memo",
+      "description": "新しいメモを作成し、必要に応じてSalesforceレコードと関連付けます",
+      "mode": "view",
+      "icon": "✏️"
+    },
+    {
+      "name": "view-memos",
+      "title": "View Memos",
+      "description": "保存されたメモを表示・編集・Salesforceに送信します",
+      "mode": "view",
+      "icon": "📝"
+    },
+    {
+      "name": "settings",
+      "title": "Settings",
+      "description": "Salesforce接続設定とメモの保存先を設定します",
+      "mode": "view",
+      "icon": "⚙️"
+    }
+  ],
+  "preferences": [
+    {
+      "name": "memoDirectory",
+      "title": "Memo Directory",
+      "description": "メモファイルを保存するディレクトリ（必須設定）",
+      "type": "directory",
+      "required": true
+    },
+    {
+      "name": "salesforceUrl",
+      "title": "Salesforce URL",
+      "description": "Salesforceインスタンスの URL (例: https://yourinstance.my.salesforce.com)",
+      "type": "textfield",
+      "required": false,
+      "default": ""
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "1.93.2",
+    "@raycast/utils": "1.17.0",
+    "jsforce": "3.6.6"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "1.0.11",
+    "@types/jsforce": "1.11.5",
+    "@types/node": "20.8.10",
+    "@types/react": "18.3.3",
+    "eslint": "8.57.0",
+    "prettier": "3.3.3",
+    "typescript": "5.4.5"
+  },
+  "scripts": {
+    "build": "ray build",
+    "dev": "ray develop",
+    "fix-lint": "ray lint --fix",
+    "lint": "ray lint",
+    "prepublishOnly": "echo \"\\n\\nIt seems like you are trying to publish the Raycast extension to npm.\\n\\nIf you did intend to publish it to npm, remove the \\`prepublishOnly\\` script and rerun \\`npm publish\\` again.\\nIf you wanted to publish it to the Raycast Store instead, use \\`npm run publish\\` instead.\\n\\n\" && exit 1",
+    "publish": "npx @raycast/api@latest publish"
+  }
+}
