@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React, { useState, useEffect } from "react";
 import {
   ActionPanel,
@@ -313,7 +312,6 @@ function MemoDetail({ memo }: { memo: MemoItem }) {
 // Edit Memo component
 function EditMemo({ memo }: { memo: MemoItem }) {
   const memoFileService = new MemoFileService();
-  const salesforceService = new SalesforceService();
   const { pop, push } = useNavigation();
   const [isLoading, setIsLoading] = useState(false);
   const [relatedRecord, setRelatedRecord] = useState<
