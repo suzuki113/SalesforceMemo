@@ -11,6 +11,7 @@ import {
   Detail,
   openExtensionPreferences,
 } from "@raycast/api";
+import { showFailureToast } from "@raycast/utils";
 import { SalesforceService } from "./utils/salesforce";
 import fs from "fs";
 
@@ -143,11 +144,7 @@ export default function Settings() {
       }
     } catch (error) {
       console.error("Settings save error:", error);
-      await showToast({
-        style: Toast.Style.Failure,
-        title: "Error",
-        message: "An error occurred while saving settings",
-      });
+      await showFailureToast("An error occurred while saving settings");
     } finally {
       setIsLoading(false);
     }
