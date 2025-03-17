@@ -38,32 +38,32 @@ export default function Settings() {
   const salesforceService = new SalesforceService();
   const preferences = getPreferenceValues<Preferences>();
 
-  // 初期設定の検証
+  // Validate initial setup
   useEffect(() => {
     verifySetup();
   }, []);
 
-  // 必要な初期設定を検証
+  // Verify required initial settings
   const verifySetup = () => {
     let isValid = true;
     let message = "";
 
-    // メモディレクトリが設定されているか確認
+    // Check if memo directory is set
     if (!preferences.memoDirectory) {
       isValid = false;
-      message += "• メモディレクトリが設定されていません。\n";
+      message += "• Memo directory is not set.\n";
     } else {
-      // ディレクトリが存在するか確認
+      // Check if directory exists
       try {
         const stats = fs.statSync(preferences.memoDirectory);
         if (!stats.isDirectory()) {
           isValid = false;
           message +=
-            "• 設定されたメモディレクトリが有効なディレクトリではありません。\n";
+            "• The configured memo directory is not a valid directory.\n";
         }
       } catch (error) {
         isValid = false;
-        message += "• 設定されたメモディレクトリにアクセスできません。\n";
+        message += "• Cannot access the configured memo directory.\n";
       }
     }
 
@@ -71,18 +71,18 @@ export default function Settings() {
     setSetupMessage(message);
   };
 
-  // 拡張機能設定を開く
+  // Open extension preferences
   const openSettings = () => {
     openExtensionPreferences();
   };
 
-  // 保存されている認証情報があれば読み込む
+  // Load saved credentials if available
   useEffect(() => {
     const loadCredentials = async () => {
       const credentials = await salesforceService.getCredentials();
       if (credentials) {
         setUsername(credentials.username);
-        // パスワードとセキュリティトークンは表示しない（セキュリティ上の理由）
+        // Do not display password and security token (for security reasons)
       }
     };
 
@@ -93,8 +93,8 @@ export default function Settings() {
     if (!hasValidSetup) {
       await showToast({
         style: Toast.Style.Failure,
-        title: "設定エラー",
-        message: "Raycast設定で必要な項目を設定してください",
+        title: "Setup Error",
+        message: "Please configure the required settings in Raycast preferences",
       });
       return;
     }
@@ -102,31 +102,31 @@ export default function Settings() {
     if (!values.username || !values.password) {
       await showToast({
         style: Toast.Style.Failure,
-        title: "入力エラー",
-        message: "ユーザー名とパスワードを入力してください",
+        title: "Input Error",
+        message: "Please enter both username and password",
       });
       return;
     }
 
     setIsLoading(true);
     try {
-      // 認証情報を保存
+      // Save credentials
       await salesforceService.saveCredentials({
         username: values.username,
         password: values.password,
         securityToken: values.securityToken || "",
       });
 
-      // 接続テスト
+      // Test connection
       const connected = await salesforceService.connect();
       if (connected) {
         await showToast({
           style: Toast.Style.Success,
-          title: "接続成功",
-          message: "Salesforceに接続できました",
+          title: "Connection Successful",
+          message: "Successfully connected to Salesforce",
         });
 
-        // 設定情報表示画面に遷移
+        // Navigate to settings details screen
         push(
           <SettingsDetail
             username={values.username}
@@ -137,30 +137,30 @@ export default function Settings() {
       } else {
         await showToast({
           style: Toast.Style.Failure,
-          title: "接続エラー",
-          message: "Salesforceへの接続に失敗しました",
+          title: "Connection Error",
+          message: "Failed to connect to Salesforce",
         });
       }
     } catch (error) {
-      console.error("設定保存エラー:", error);
+      console.error("Settings save error:", error);
       await showToast({
         style: Toast.Style.Failure,
-        title: "エラー",
-        message: "設定の保存中にエラーが発生しました",
+        title: "Error",
+        message: "An error occurred while saving settings",
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  // 設定が有効でない場合は警告を表示
+  // Display warning if settings are not valid
   if (!hasValidSetup) {
     return (
       <Form
         actions={
           <ActionPanel>
             <Action
-              title="Raycast設定を開く"
+              title="Open Raycast Preferences"
               onAction={openSettings}
               icon={Icon.Gear}
             />
@@ -168,8 +168,8 @@ export default function Settings() {
         }
       >
         <Form.Description
-          title="⚠️ 初期設定が必要です"
-          text={`以下の問題を解決するために、Raycast設定を開いてください：\n\n${setupMessage}\n「Raycast設定を開く」ボタンをクリックして、必要な設定を行ってください。`}
+          title="⚠️ Initial Setup Required"
+          text={`Please open Raycast preferences to resolve the following issues:\n\n${setupMessage}\nClick the "Open Raycast Preferences" button to configure the required settings.`}
         />
       </Form>
     );
@@ -181,12 +181,12 @@ export default function Settings() {
       actions={
         <ActionPanel>
           <Action.SubmitForm
-            title="設定を保存"
+            title="Save Settings"
             onSubmit={handleSubmit}
             icon={Icon.SaveDocument}
           />
           <Action
-            title="Raycast設定を開く"
+            title="Open Raycast Preferences"
             onAction={openSettings}
             icon={Icon.Gear}
           />
@@ -194,12 +194,12 @@ export default function Settings() {
       }
     >
       <Form.Description
-        title="Salesforce接続設定"
-        text="Salesforceに接続するための認証情報を入力してください。"
+        title="Salesforce Connection Settings"
+        text="Enter your Salesforce authentication information to connect."
       />
       <Form.TextField
         id="username"
-        title="ユーザー名"
+        title="Username"
         placeholder="user@example.com"
         value={username}
         onChange={setUsername}
@@ -207,26 +207,26 @@ export default function Settings() {
       />
       <Form.PasswordField
         id="password"
-        title="パスワード"
-        placeholder="パスワードを入力"
+        title="Password"
+        placeholder="Enter password"
         value={password}
         onChange={setPassword}
       />
       <Form.TextField
         id="securityToken"
-        title="セキュリティトークン"
-        placeholder="セキュリティトークンを入力（必要な場合）"
+        title="Security Token"
+        placeholder="Enter security token (if required)"
         value={securityToken}
         onChange={setSecurityToken}
-        info="Salesforceの設定によっては不要な場合があります"
+        info="May not be required depending on your Salesforce settings"
       />
       <Form.Description
-        title="Raycast設定"
-        text={`メモの保存先: ${preferences.memoDirectory || "未設定"}\nSalesforce URL: ${preferences.salesforceUrl || "未設定（デフォルトを使用）"}`}
+        title="Raycast Settings"
+        text={`Memo Save Location: ${preferences.memoDirectory || "Not set"}\nSalesforce URL: ${preferences.salesforceUrl || "Not set (using default)"}`}
       />
       <Form.Description
-        title="ヘルプ"
-        text="「メモの保存先」が設定されていない場合は、右上の「Raycast設定を開く」をクリックして設定してください。"
+        title="Help"
+        text="If the 'Memo Save Location' is not set, click 'Open Raycast Preferences' in the top right to configure it."
       />
     </Form>
   );
@@ -241,24 +241,24 @@ function SettingsDetail({
   salesforceUrl: string;
   memoDirectory: string;
 }) {
-  const markdownContent = `# Salesforce連携設定
+  const markdownContent = `# Salesforce Connection Settings
 
-## 認証情報
-- **ユーザー名**: ${username}
-- **認証状態**: 接続済み
+## Authentication Information
+- **Username**: ${username}
+- **Authentication Status**: Connected
 
-## Raycast設定
-- **メモ保存先**: ${memoDirectory || "未設定"}
-- **Salesforce URL**: ${salesforceUrl || "デフォルト"}
+## Raycast Settings
+- **Memo Save Location**: ${memoDirectory || "Not set"}
+- **Salesforce URL**: ${salesforceUrl || "Not set (using default)"}
 
-## 注意事項
-- パスワードとセキュリティトークンはローカルに保存されています
-- 認証情報を変更する場合は、設定画面から再度入力してください
+## Notes
+- Password and security token are stored locally
+- If you need to change authentication information, please enter it again in the settings screen
 
-## 使い方ガイド
-1. メモの作成は「Create Memo」コマンドを使用します
-2. 既存のメモを表示・編集するには「View Memos」コマンドを使用します
-3. Salesforceとの同期は各メモの詳細画面から行えます
+## Usage Guide
+1. Create a memo using the "Create Memo" command
+2. View or edit an existing memo using the "View Memos" command
+3. Synchronize with Salesforce from the memo details screen
 `;
 
   return <Detail markdown={markdownContent} />;

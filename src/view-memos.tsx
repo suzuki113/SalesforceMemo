@@ -69,19 +69,19 @@ export default function ViewMemos() {
           const { content, metadata } = memoFileService.readMemo(memoPath);
           const filename = path.basename(memoPath);
 
-          // マークダウンからタイトルを抽出 (最初の# で始まる行)
-          // タイトル抽出を改善：複数行にまたがる場合も考慮
+          // Extract title from markdown (first line starting with #)
+          // Improved title extraction: consider multi-line cases
           let title = filename;
           const titleMatch = content.match(/^#\s+(.+)$/m);
           if (titleMatch && titleMatch[1]) {
             title = titleMatch[1].trim();
-            // タイトルに不正な文字がないか確認
+            // Check for invalid characters in title
             if (title.length === 0) {
               title = filename;
             }
-            // コンソールにタイトルのバイト表現も出力（デバッグ用）
+            // Output byte representation of title for debugging
             console.log(
-              `タイトル「${title}」のバイト長: ${Buffer.from(title).length}`,
+              `Title "${title}" byte length: ${Buffer.from(title).length}`,
             );
           }
 
@@ -95,7 +95,7 @@ export default function ViewMemos() {
         }
       }
 
-      // 作成日時の新しい順に並べ替え
+      // Sort by creation date (newest first)
       memoItems.sort((a, b) => {
         const dateA = a.metadata.createdAt
           ? new Date(a.metadata.createdAt).getTime()
@@ -108,11 +108,11 @@ export default function ViewMemos() {
 
       setMemos(memoItems);
     } catch (error) {
-      console.error("メモ読み込みエラー:", error);
+      console.error("Error loading memos:", error);
       await showToast({
         style: Toast.Style.Failure,
-        title: "エラー",
-        message: "メモの読み込み中にエラーが発生しました",
+        title: "Error",
+        message: "An error occurred while loading memos",
       });
     } finally {
       setIsLoading(false);
@@ -121,10 +121,10 @@ export default function ViewMemos() {
 
   const deleteMemo = async (memo: MemoItem) => {
     const confirmed = await confirmAlert({
-      title: "メモを削除",
-      message: `"${memo.title}" を削除しますか？`,
+      title: "Delete Memo",
+      message: `Are you sure you want to delete "${memo.title}"?`,
       primaryAction: {
-        title: "削除",
+        title: "Delete",
       },
     });
 
@@ -133,29 +133,29 @@ export default function ViewMemos() {
         fs.unlinkSync(memo.path);
         await showToast({
           style: Toast.Style.Success,
-          title: "メモを削除しました",
+          title: "Memo Deleted",
         });
         loadMemos();
       } catch (error) {
-        console.error("メモ削除エラー:", error);
+        console.error("Error deleting memo:", error);
         await showToast({
           style: Toast.Style.Failure,
-          title: "エラー",
-          message: "メモの削除中にエラーが発生しました",
+          title: "Error",
+          message: "An error occurred while deleting the memo",
         });
       }
     }
   };
 
   return (
-    <List isLoading={isLoading} searchBarPlaceholder="メモを検索">
+    <List isLoading={isLoading} searchBarPlaceholder="Search memos">
       {memos.map((memo) => (
         <List.Item
           key={memo.path}
           title={memo.title}
           subtitle={
             memo.metadata.sfName
-              ? `関連レコード: ${memo.metadata.sfType} - ${memo.metadata.sfName}`
+              ? `Related Record: ${memo.metadata.sfType} - ${memo.metadata.sfName}`
               : ""
           }
           accessoryTitle={
@@ -166,17 +166,17 @@ export default function ViewMemos() {
           actions={
             <ActionPanel>
               <Action
-                title="メモを表示"
+                title="View Memo"
                 icon={Icon.Eye}
                 onAction={() => push(<MemoDetail memo={memo} />)}
               />
               <Action
-                title="メモを編集"
+                title="Edit Memo"
                 icon={Icon.Pencil}
                 onAction={() => push(<EditMemo memo={memo} />)}
               />
               <Action
-                title="メモを削除"
+                title="Delete Memo"
                 icon={Icon.Trash}
                 onAction={() => deleteMemo(memo)}
               />
@@ -194,17 +194,17 @@ function MemoDetail({ memo }: { memo: MemoItem }) {
   const salesforceService = new SalesforceService();
   const { push } = useNavigation();
 
-  // メモの内容を読み込む（JSON形式）
+  // Load memo content (JSON format)
   const { originalData } = memoFileService.readMemo(memo.path);
 
-  // JSONデータを整形して表示用コンテンツを作成
+  // Create formatted markdown content from JSON data
   const createMarkdownContent = () => {
     if (!originalData) {
-      return "メモデータを読み込めませんでした";
+      return "Failed to load memo data";
     }
 
     const typedData = originalData as unknown as MemoData;
-    const title = typedData.title || "タイトルなし";
+    const title = typedData.title || "No Title";
     const content = typedData.content || "";
     const metadata = typedData.metadata || {};
     const syncStatus = typedData.syncStatus || {
@@ -212,30 +212,30 @@ function MemoDetail({ memo }: { memo: MemoItem }) {
       sfNoteId: null,
     };
 
-    // メタデータセクション
+    // Metadata section
     let metadataSection = "";
     if (metadata.sfId) {
-      metadataSection += `\n\n## 関連レコード情報\n`;
-      metadataSection += `- **タイプ**: ${metadata.sfType || "不明"}\n`;
-      metadataSection += `- **名前**: ${metadata.sfName || "不明"}\n`;
+      metadataSection += `\n\n## Related Record Information\n`;
+      metadataSection += `- **Type**: ${metadata.sfType || "Unknown"}\n`;
+      metadataSection += `- **Name**: ${metadata.sfName || "Unknown"}\n`;
       metadataSection += `- **ID**: ${metadata.sfId}\n`;
     }
 
-    // 作成・更新日時
-    let dateSection = "\n\n## 日時情報\n";
+    // Date information
+    let dateSection = "\n\n## Date Information\n";
     if (metadata.createdAt) {
-      dateSection += `- **作成日時**: ${new Date(metadata.createdAt).toLocaleString()}\n`;
+      dateSection += `- **Created At**: ${new Date(metadata.createdAt).toLocaleString()}\n`;
     }
     if (metadata.updatedAt) {
-      dateSection += `- **更新日時**: ${new Date(metadata.updatedAt).toLocaleString()}\n`;
+      dateSection += `- **Updated At**: ${new Date(metadata.updatedAt).toLocaleString()}\n`;
     }
 
-    // 同期情報
+    // Sync information
     let syncSection = "";
     if (syncStatus.lastSyncedAt) {
-      syncSection += `\n\n## Salesforce同期情報\n`;
-      syncSection += `- **最終同期**: ${new Date(syncStatus.lastSyncedAt).toLocaleString()}\n`;
-      syncSection += `- **Salesforce ID**: ${syncStatus.sfNoteId || "不明"}\n`;
+      syncSection += `\n\n## Salesforce Sync Information\n`;
+      syncSection += `- **Last Synced**: ${new Date(syncStatus.lastSyncedAt).toLocaleString()}\n`;
+      syncSection += `- **Salesforce ID**: ${syncStatus.sfNoteId || "Unknown"}\n`;
     }
 
     return `# ${title}\n\n${content}${metadataSection}${dateSection}${syncSection}`;
@@ -247,41 +247,41 @@ function MemoDetail({ memo }: { memo: MemoItem }) {
     setIsUploading(true);
     try {
       if (!originalData) {
-        throw new Error("メモデータが読み込めません");
+        throw new Error("Failed to load memo data");
       }
 
-      console.log("Salesforce送信前のメモデータ:", originalData);
+      console.log("Memo data before sending to Salesforce:", originalData);
 
-      // 送信するタイトルと本文を取得
+      // Get title and content to send
       const typedData = originalData as unknown as MemoData;
       const title = typedData.title || memo.title;
       const content = typedData.content || "";
       const metadata = typedData.metadata || {};
 
-      // Salesforceにメモを作成
+      // Create memo in Salesforce
       const memoId = await salesforceService.createMemoRecord(
         title,
         content,
         metadata.sfId,
       );
 
-      // 送信成功後、同期ステータスを更新
+      // After successful sending, update sync status
       const updated = await memoFileService.updateSyncStatus(memo.path, memoId);
       if (updated) {
-        console.log("同期ステータスを更新しました:", memoId);
+        console.log("Sync status updated:", memoId);
       }
 
       await showToast({
         style: Toast.Style.Success,
-        title: "メモをSalesforceに送信しました",
-        message: `メモID: ${memoId}`,
+        title: "Memo Sent to Salesforce",
+        message: `Memo ID: ${memoId}`,
       });
     } catch (error) {
-      console.error("Salesforce送信エラー:", error);
+      console.error("Salesforce send error:", error);
       await showToast({
         style: Toast.Style.Failure,
-        title: "送信エラー",
-        message: "Salesforceへのメモ送信中にエラーが発生しました",
+        title: "Send Error",
+        message: "An error occurred while sending memo to Salesforce",
       });
     } finally {
       setIsUploading(false);
@@ -295,12 +295,12 @@ function MemoDetail({ memo }: { memo: MemoItem }) {
       actions={
         <ActionPanel>
           <Action
-            title="Salesforceに送信"
+            title="Send to Salesforce"
             icon={Icon.Upload}
             onAction={uploadToSalesforce}
           />
           <Action
-            title="メモを編集"
+            title="Edit Memo"
             icon={Icon.Pencil}
             onAction={() => push(<EditMemo memo={memo} />)}
           />
@@ -310,7 +310,7 @@ function MemoDetail({ memo }: { memo: MemoItem }) {
   );
 }
 
-// メモ編集コンポーネント
+// Edit Memo component
 function EditMemo({ memo }: { memo: MemoItem }) {
   const memoFileService = new MemoFileService();
   const salesforceService = new SalesforceService();
@@ -320,23 +320,23 @@ function EditMemo({ memo }: { memo: MemoItem }) {
     SalesforceRecord | undefined
   >(undefined);
 
-  // メモの内容を読み込む
+  // Load memo content
   const { metadata, originalData } = memoFileService.readMemo(memo.path);
 
-  // 元のJSONデータがある場合はそれを使用
+  // Use original JSON data if available
   const jsonData = originalData || {
     title: memo.title,
     content: "",
     metadata: metadata,
   };
 
-  // 初期値設定
+  // Initial values
   const [title, setTitle] = useState(jsonData.title || memo.title);
   const [memoContent, setMemoContent] = useState(jsonData.content || "");
 
-  // 関連レコードの初期設定
+  // Initial setup for related record
   useEffect(() => {
-    // メタデータから関連レコード情報を取得
+    // Get related record info from metadata
     const typedMetadata = metadata as MemoItem["metadata"];
     if (typedMetadata.sfId && typedMetadata.sfName && typedMetadata.sfType) {
       setRelatedRecord({
@@ -347,18 +347,18 @@ function EditMemo({ memo }: { memo: MemoItem }) {
     }
   }, [metadata]);
 
-  // レコード検索画面を表示
+  // Show record search screen
   const handleRecordSelect = () => {
     push(<RecordSearch onRecordSelect={selectRecord} />);
   };
 
-  // レコード選択時の処理
+  // Record selection handler
   const selectRecord = (record: SalesforceRecord) => {
-    console.log("メモ編集画面でレコード設定:", record);
+    console.log("Record selected in memo edit screen:", record);
     setRelatedRecord(record);
   };
 
-  // 関連レコードをクリア
+  // Clear related record
   const clearRelatedRecord = () => {
     setRelatedRecord(undefined);
   };
@@ -367,15 +367,15 @@ function EditMemo({ memo }: { memo: MemoItem }) {
     if (!values.title || !values.content) {
       await showToast({
         style: Toast.Style.Failure,
-        title: "入力エラー",
-        message: "タイトルと内容を入力してください",
+        title: "Input Error",
+        message: "Please enter both title and content",
       });
       return;
     }
 
     setIsLoading(true);
     try {
-      // 元のJSONデータを更新
+      // Update original JSON data
       const updatedData = {
         ...jsonData,
         title: values.title,
@@ -390,7 +390,7 @@ function EditMemo({ memo }: { memo: MemoItem }) {
         metadata: Record<string, unknown>;
       };
 
-      // 関連レコード情報の更新
+      // Update related record information
       if (relatedRecord) {
         updatedData.metadata = {
           ...updatedData.metadata,
@@ -399,7 +399,7 @@ function EditMemo({ memo }: { memo: MemoItem }) {
           sfType: relatedRecord.Type,
         };
       } else {
-        // 関連レコードがクリアされた場合、関連情報も削除
+        // If related record is cleared, remove related info
         const metadataObj = updatedData.metadata;
         if ("sfId" in metadataObj) {
           delete metadataObj["sfId"];
@@ -408,39 +408,39 @@ function EditMemo({ memo }: { memo: MemoItem }) {
         }
       }
 
-      // JSON文字列に変換
+      // Convert to JSON string
       const fileContent = JSON.stringify(updatedData, null, 2);
 
-      // 同じファイルパスに上書き保存
+      // Save to the same file path
       await fs.promises.writeFile(memo.path, fileContent, { encoding: "utf8" });
 
-      // ファイル書き込み後に確認
-      console.log(`メモ更新完了: ${memo.path} (JSON形式)`);
+      // Confirm file write
+      console.log(`Memo update completed: ${memo.path} (JSON format)`);
 
       await showToast({
         style: Toast.Style.Success,
-        title: "メモを更新しました",
-        message: "変更を保存しました",
+        title: "Memo Updated",
+        message: "Changes saved",
       });
 
-      // 前の画面に戻る
+      // Return to previous screen
       pop();
     } catch (error) {
-      console.error("メモ更新エラー:", error);
+      console.error("Error updating memo:", error);
       await showToast({
         style: Toast.Style.Failure,
-        title: "エラー",
-        message: "メモの更新中にエラーが発生しました",
+        title: "Error",
+        message: "An error occurred while updating the memo",
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  // 現在の関連レコード表示用テキスト
+  // Current related record display text
   const relatedRecordText = relatedRecord
     ? `${relatedRecord.Type}: ${relatedRecord.Name}`
-    : "なし";
+    : "None";
 
   return (
     <Form
@@ -448,18 +448,18 @@ function EditMemo({ memo }: { memo: MemoItem }) {
       actions={
         <ActionPanel>
           <Action.SubmitForm
-            title="メモを保存"
+            title="Save Memo"
             onSubmit={handleSubmit}
             icon={Icon.Document}
           />
           <Action
-            title="関連レコードを選択"
+            title="Select Related Record"
             onAction={handleRecordSelect}
             icon={Icon.Link}
           />
           {relatedRecord && (
             <Action
-              title="関連レコードをクリア"
+              title="Clear Related Record"
               onAction={clearRelatedRecord}
               icon={Icon.Trash}
             />
@@ -469,25 +469,25 @@ function EditMemo({ memo }: { memo: MemoItem }) {
     >
       <Form.TextField
         id="title"
-        title="タイトル"
-        placeholder="メモのタイトルを入力"
+        title="Title"
+        placeholder="Enter memo title"
         value={title as string}
         onChange={setTitle}
         autoFocus
       />
       <Form.TextArea
         id="content"
-        title="内容"
-        placeholder="メモの内容を入力"
+        title="Content"
+        placeholder="Enter memo content"
         value={memoContent as string}
         onChange={setMemoContent}
       />
-      <Form.Description title="関連レコード" text={relatedRecordText} />
+      <Form.Description title="Related Record" text={relatedRecordText} />
     </Form>
   );
 }
 
-// レコード検索コンポーネント (view-memosにも追加)
+// Record search component (also added to view-memos)
 function RecordSearch({
   onRecordSelect,
 }: {
@@ -508,8 +508,8 @@ function RecordSearch({
       if (!credentials) {
         await showToast({
           style: Toast.Style.Failure,
-          title: "認証エラー",
-          message: "Salesforceの認証情報が設定されていません",
+          title: "Authentication Error",
+          message: "Salesforce credentials are not configured",
         });
         return;
       }
@@ -517,11 +517,11 @@ function RecordSearch({
       const searchResults = await salesforceService.searchRecords(searchText);
       setRecords(searchResults);
     } catch (error) {
-      console.error("レコード検索エラー:", error);
+      console.error("Record search error:", error);
       await showToast({
         style: Toast.Style.Failure,
-        title: "検索エラー",
-        message: "レコードの検索中にエラーが発生しました",
+        title: "Search Error",
+        message: "An error occurred while searching for records",
       });
     } finally {
       setIsLoading(false);
@@ -539,31 +539,31 @@ function RecordSearch({
   }, [searchText]);
 
   const handleRecordSelection = async (record: SalesforceRecord) => {
-    console.log("レコード選択処理開始:", record);
+    console.log("Record selection process started:", record);
     try {
-      // レコード選択実行
+      // Execute record selection
       onRecordSelect(record);
-      console.log("レコード選択完了");
+      console.log("Record selection completed");
 
-      // 選択成功メッセージ
+      // Success message
       await showToast({
         style: Toast.Style.Success,
-        title: "レコードを選択しました",
+        title: "Record Selected",
         message: `[${record.Type}] ${record.Name}`,
       });
 
-      // 少し待機して確実にレコード情報が設定されるようにする
+      // Wait a bit to ensure record info is set
       setTimeout(() => {
-        // 前の画面（メモ編集画面）に戻る
-        console.log("前の画面に戻ります");
+        // Return to previous screen (memo edit screen)
+        console.log("Returning to previous screen");
         pop();
       }, 300);
     } catch (error) {
-      console.error("レコード選択エラー:", error);
+      console.error("Record selection error:", error);
       await showToast({
         style: Toast.Style.Failure,
-        title: "エラー",
-        message: `レコード選択処理に失敗しました: ${error instanceof Error ? error.message : String(error)}`,
+        title: "Error",
+        message: `Record selection failed: ${error instanceof Error ? error.message : String(error)}`,
       });
     }
   };
@@ -571,7 +571,7 @@ function RecordSearch({
   return (
     <List
       isLoading={isLoading}
-      searchBarPlaceholder="レコードを検索"
+      searchBarPlaceholder="Search for records"
       onSearchTextChange={setSearchText}
       throttle
     >
@@ -585,7 +585,7 @@ function RecordSearch({
           actions={
             <ActionPanel>
               <Action
-                title="このレコードを選択"
+                title="Select This Record"
                 onAction={() => handleRecordSelection(record)}
               />
             </ActionPanel>
@@ -596,7 +596,7 @@ function RecordSearch({
   );
 }
 
-// オブジェクトタイプに基づいてアイコンを返す関数
+// Function to return an icon based on object type
 function getObjectIcon(objectType: string): Icon {
   switch (objectType.toLowerCase()) {
     case "account":

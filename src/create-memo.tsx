@@ -17,7 +17,7 @@ import {
   SalesforceRecord,
 } from "./utils/salesforce";
 
-// メモデータの型定義
+// Type definition for memo data
 interface MemoData {
   title: string;
   content: string;
@@ -50,25 +50,25 @@ export default function CreateMemo() {
   };
 
   const selectRecord = (record: SalesforceRecord) => {
-    console.log("メイン画面でレコード設定:", record);
+    console.log("Record selected in main screen:", record);
     setRelatedRecord(record);
-    // 直接ログ出力（setTimeout不要）
-    console.log("メイン画面でレコード選択完了:", { record });
+    // Direct log output (no setTimeout needed)
+    console.log("Record selection completed in main screen:", { record });
   };
 
   const handleSubmit = async (values: { title: string; content: string }) => {
     if (!values.title || !values.content) {
       await showToast({
         style: Toast.Style.Failure,
-        title: "入力エラー",
-        message: "タイトルと内容を入力してください",
+        title: "Input Error",
+        message: "Please enter both title and content",
       });
       return;
     }
 
     setIsLoading(true);
     try {
-      // メモをローカルに保存
+      // Save memo locally
       const filePath = await memoFileService.saveMemo(
         values.title,
         values.content,
@@ -77,11 +77,11 @@ export default function CreateMemo() {
 
       await showToast({
         style: Toast.Style.Success,
-        title: "メモを保存しました",
-        message: "ローカルに保存しました",
+        title: "Memo Saved",
+        message: "Saved to local storage",
       });
 
-      // 詳細画面に遷移して、メモとSalesforceへの送信ボタンを表示
+      // Navigate to detail screen with send to Salesforce button
       push(
         <MemoDetail
           title={values.title}
@@ -91,11 +91,11 @@ export default function CreateMemo() {
         />,
       );
     } catch (error) {
-      console.error("メモ保存エラー:", error);
+      console.error("Memo save error:", error);
       await showToast({
         style: Toast.Style.Failure,
-        title: "エラー",
-        message: "メモの保存中にエラーが発生しました",
+        title: "Error",
+        message: "An error occurred while saving the memo",
       });
     } finally {
       setIsLoading(false);
@@ -104,7 +104,7 @@ export default function CreateMemo() {
 
   const relatedRecordText = relatedRecord
     ? `${relatedRecord.Type}: ${relatedRecord.Name}`
-    : "なし";
+    : "None";
 
   return (
     <Form
@@ -112,12 +112,12 @@ export default function CreateMemo() {
       actions={
         <ActionPanel>
           <Action.SubmitForm
-            title="メモを保存"
+            title="Save Memo"
             onSubmit={handleSubmit}
             icon={Icon.Document}
           />
           <Action
-            title="関連レコードを選択"
+            title="Select Related Record"
             onAction={handleRecordSelect}
             icon={Icon.Link}
           />
@@ -126,25 +126,25 @@ export default function CreateMemo() {
     >
       <Form.TextField
         id="title"
-        title="タイトル"
-        placeholder="メモのタイトルを入力"
+        title="Title"
+        placeholder="Enter memo title"
         value={title}
         onChange={setTitle}
         autoFocus
       />
       <Form.TextArea
         id="content"
-        title="内容"
-        placeholder="メモの内容を入力"
+        title="Content"
+        placeholder="Enter memo content"
         value={content}
         onChange={setContent}
       />
-      <Form.Description title="関連レコード" text={relatedRecordText} />
+      <Form.Description title="Related Record" text={relatedRecordText} />
     </Form>
   );
 }
 
-// レコード検索コンポーネント
+// Record search component
 function RecordSearch({
   onRecordSelect,
 }: {
@@ -165,8 +165,8 @@ function RecordSearch({
       if (!credentials) {
         await showToast({
           style: Toast.Style.Failure,
-          title: "認証エラー",
-          message: "Salesforceの認証情報が設定されていません",
+          title: "Authentication Error",
+          message: "Salesforce credentials are not configured",
         });
         return;
       }
@@ -174,11 +174,11 @@ function RecordSearch({
       const searchResults = await salesforceService.searchRecords(searchText);
       setRecords(searchResults);
     } catch (error) {
-      console.error("レコード検索エラー:", error);
+      console.error("Record search error:", error);
       await showToast({
         style: Toast.Style.Failure,
-        title: "検索エラー",
-        message: "レコードの検索中にエラーが発生しました",
+        title: "Search Error",
+        message: "An error occurred while searching for records",
       });
     } finally {
       setIsLoading(false);
@@ -196,28 +196,28 @@ function RecordSearch({
   }, [searchText]);
 
   const handleRecordSelection = async (record: SalesforceRecord) => {
-    console.log("レコード選択処理開始:", record);
+    console.log("Record selection process started:", record);
     try {
-      // レコード選択実行
+      // Execute record selection
       onRecordSelect(record);
-      console.log("レコード選択完了");
+      console.log("Record selection completed");
 
-      // 選択成功メッセージ
+      // Success message
       await showToast({
         style: Toast.Style.Success,
-        title: "レコードを選択しました",
+        title: "Record Selected",
         message: `[${record.Type}] ${record.Name}`,
       });
 
-      // 前の画面に即時に戻る
-      console.log("前の画面に戻ります");
+      // Return to previous screen immediately
+      console.log("Returning to previous screen");
       pop();
     } catch (error) {
-      console.error("レコード選択エラー:", error);
+      console.error("Record selection error:", error);
       await showToast({
         style: Toast.Style.Failure,
-        title: "エラー",
-        message: `レコード選択処理に失敗しました: ${error instanceof Error ? error.message : String(error)}`,
+        title: "Error",
+        message: `Record selection failed: ${error instanceof Error ? error.message : String(error)}`,
       });
     }
   };
@@ -225,7 +225,7 @@ function RecordSearch({
   return (
     <List
       isLoading={isLoading}
-      searchBarPlaceholder="レコードを検索"
+      searchBarPlaceholder="Search for records"
       onSearchTextChange={setSearchText}
       throttle
     >
@@ -239,7 +239,7 @@ function RecordSearch({
           actions={
             <ActionPanel>
               <Action
-                title="このレコードを選択"
+                title="Select This Record"
                 onAction={() => handleRecordSelection(record)}
               />
             </ActionPanel>
@@ -250,7 +250,7 @@ function RecordSearch({
   );
 }
 
-// オブジェクトタイプに基づいてアイコンを返す関数
+// Function to return an icon based on object type
 function getObjectIcon(objectType: string): Icon {
   switch (objectType.toLowerCase()) {
     case "account":
@@ -272,7 +272,7 @@ function getObjectIcon(objectType: string): Icon {
   }
 }
 
-// メモ詳細表示と送信コンポーネント
+// Memo detail display and submission component
 function MemoDetail({
   title,
   content,
@@ -291,16 +291,16 @@ function MemoDetail({
   const uploadToSalesforce = async () => {
     setIsUploading(true);
     try {
-      // 最新のメモデータを読み込む
+      // Load the latest memo data
       const { originalData } = memoFileService.readMemo(filePath);
 
       if (!originalData) {
-        throw new Error("メモデータが読み込めません");
+        throw new Error("Failed to load memo data");
       }
 
-      console.log("Salesforce送信前のメモデータ:", originalData);
+      console.log("Memo data before sending to Salesforce:", originalData);
 
-      // Salesforceにメモを作成
+      // Create memo in Salesforce
       const typedData = originalData as unknown as MemoData;
       const memoId = await salesforceService.createMemoRecord(
         typedData.title || title,
@@ -308,37 +308,37 @@ function MemoDetail({
         relatedRecord?.Id,
       );
 
-      // 送信成功後、同期ステータスを更新
+      // After successful sending, update sync status
       const updated = await memoFileService.updateSyncStatus(filePath, memoId);
       if (updated) {
-        console.log("同期ステータスを更新しました:", memoId);
+        console.log("Sync status updated:", memoId);
       }
 
       await showToast({
         style: Toast.Style.Success,
-        title: "メモをSalesforceに送信しました",
-        message: `メモID: ${memoId}`,
+        title: "Memo Sent to Salesforce",
+        message: `Memo ID: ${memoId}`,
       });
     } catch (error) {
-      console.error("Salesforce送信エラー:", error);
+      console.error("Salesforce send error:", error);
       await showToast({
         style: Toast.Style.Failure,
-        title: "送信エラー",
-        message: "Salesforceへのメモ送信中にエラーが発生しました",
+        title: "Send Error",
+        message: "An error occurred while sending memo to Salesforce",
       });
     } finally {
       setIsUploading(false);
     }
   };
 
-  // JSONデータを整形して表示用コンテンツを作成
+  // Create formatted markdown content from JSON data
   const createMarkdownContent = () => {
     try {
-      // ファイルからJSONデータを読み込む
+      // Load JSON data from file
       const { originalData } = memoFileService.readMemo(filePath);
 
       if (!originalData) {
-        return `# ${title}\n\n${content}\n\n---\n\n**ファイル保存場所**: ${filePath}\n${relatedRecord ? `**関連レコード**: ${relatedRecord.Type} - ${relatedRecord.Name} (${relatedRecord.Id})` : ""}`;
+        return `# ${title}\n\n${content}\n\n---\n\n**File Location**: ${filePath}\n${relatedRecord ? `**Related Record**: ${relatedRecord.Type} - ${relatedRecord.Name} (${relatedRecord.Id})` : ""}`;
       }
 
       const typedData = originalData as unknown as MemoData;
@@ -346,34 +346,34 @@ function MemoDetail({
       const jsonContent = typedData.content || content;
       const metadata = typedData.metadata || {};
 
-      // メタデータセクション
+      // Metadata section
       let metadataSection = "";
       if (relatedRecord || metadata.sfId) {
-        metadataSection += `\n\n## 関連レコード情報\n`;
+        metadataSection += `\n\n## Related Record Information\n`;
         if (relatedRecord) {
-          metadataSection += `- **タイプ**: ${relatedRecord.Type || "不明"}\n`;
-          metadataSection += `- **名前**: ${relatedRecord.Name || "不明"}\n`;
+          metadataSection += `- **Type**: ${relatedRecord.Type || "Unknown"}\n`;
+          metadataSection += `- **Name**: ${relatedRecord.Name || "Unknown"}\n`;
           metadataSection += `- **ID**: ${relatedRecord.Id}\n`;
         } else if (metadata.sfId) {
-          metadataSection += `- **タイプ**: ${metadata.sfType || "不明"}\n`;
-          metadataSection += `- **名前**: ${metadata.sfName || "不明"}\n`;
+          metadataSection += `- **Type**: ${metadata.sfType || "Unknown"}\n`;
+          metadataSection += `- **Name**: ${metadata.sfName || "Unknown"}\n`;
           metadataSection += `- **ID**: ${metadata.sfId}\n`;
         }
       }
 
-      // 作成・更新日時
-      let dateSection = "\n\n## 日時情報\n";
+      // Date information
+      let dateSection = "\n\n## Date Information\n";
       if (metadata.createdAt) {
-        dateSection += `- **作成日時**: ${new Date(metadata.createdAt).toLocaleString()}\n`;
+        dateSection += `- **Created At**: ${new Date(metadata.createdAt).toLocaleString()}\n`;
       }
       if (metadata.updatedAt) {
-        dateSection += `- **更新日時**: ${new Date(metadata.updatedAt).toLocaleString()}\n`;
+        dateSection += `- **Updated At**: ${new Date(metadata.updatedAt).toLocaleString()}\n`;
       }
 
-      return `# ${jsonTitle}\n\n${jsonContent}\n\n---\n\n**ファイル保存場所**: ${filePath}\n${relatedRecord ? `**関連レコード**: ${relatedRecord.Type} - ${relatedRecord.Name} (${relatedRecord.Id})` : ""}\n${metadataSection}\n${dateSection}`;
+      return `# ${jsonTitle}\n\n${jsonContent}\n\n---\n\n**File Location**: ${filePath}\n${relatedRecord ? `**Related Record**: ${relatedRecord.Type} - ${relatedRecord.Name} (${relatedRecord.Id})` : ""}\n${metadataSection}\n${dateSection}`;
     } catch (error) {
-      console.error("マークダウンコンテンツ作成エラー:", error);
-      return `# ${title}\n\n${content}\n\n---\n\n**ファイル保存場所**: ${filePath}\n${relatedRecord ? `**関連レコード**: ${relatedRecord.Type} - ${relatedRecord.Name} (${relatedRecord.Id})` : ""}`;
+      console.error("Markdown content creation error:", error);
+      return `# ${title}\n\n${content}\n\n---\n\n**File Location**: ${filePath}\n${relatedRecord ? `**Related Record**: ${relatedRecord.Type} - ${relatedRecord.Name} (${relatedRecord.Id})` : ""}`;
     }
   };
 
@@ -383,7 +383,7 @@ function MemoDetail({
       actions={
         <ActionPanel>
           <Action
-            title="Salesforceに送信"
+            title="Send to Salesforce"
             onAction={uploadToSalesforce}
             icon={Icon.Upload}
           />
