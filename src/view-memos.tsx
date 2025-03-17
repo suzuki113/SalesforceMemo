@@ -337,9 +337,9 @@ function EditMemo({ memo }: { memo: MemoItem }) {
           ...(jsonData.metadata || {}),
           updatedAt: new Date().toISOString(),
         },
-      } as { 
-        title: string; 
-        content: string; 
+      } as {
+        title: string;
+        content: string;
         metadata: Record<string, unknown>;
       };
 
@@ -354,10 +354,10 @@ function EditMemo({ memo }: { memo: MemoItem }) {
       } else {
         // 関連レコードがクリアされた場合、関連情報も削除
         const metadataObj = updatedData.metadata;
-        if ('sfId' in metadataObj) {
-          delete metadataObj['sfId'];
-          delete metadataObj['sfName'];
-          delete metadataObj['sfType'];
+        if ("sfId" in metadataObj) {
+          delete metadataObj["sfId"];
+          delete metadataObj["sfName"];
+          delete metadataObj["sfType"];
         }
       }
 
