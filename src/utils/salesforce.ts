@@ -420,6 +420,9 @@ export class MemoFileService {
   listMemos(): string[] {
     const memoDir = this.preferences.memoDirectory;
     try {
+      if (!fs.existsSync(memoDir)) {
+        return [];
+      }
       return fs
         .readdirSync(memoDir)
         .filter((file) => file.endsWith(".json"))
