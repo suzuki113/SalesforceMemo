@@ -30,7 +30,7 @@ interface MemoItem {
   };
 }
 
-// メモのJSONデータの型定義
+// Type definition for memo JSON data
 interface MemoData {
   title: string;
   content: string;
