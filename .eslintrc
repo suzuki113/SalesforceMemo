@@ -1,7 +1,5 @@
 {
-  "extends": ["@raycast"],
-  "rules": {
-    "@typescript-eslint/no-unused-vars": "off",
-    "@typescript-eslint/no-explicit-any": "off"
-  }
+  "root": true,
+  "ignorePatterns": ["**/*"],
+  "extends": ["@raycast"]
 }
