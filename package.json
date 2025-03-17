@@ -52,6 +52,40 @@
       "type": "textfield",
       "required": false,
       "default": ""
+    },
+    {
+      "name": "salesforceObjectType",
+      "title": "Salesforce Object Type",
+      "description": "The Salesforce object type to use for storing memos",
+      "type": "dropdown",
+      "required": false,
+      "default": "ContentNote",
+      "data": [
+        {
+          "title": "Content Note",
+          "value": "ContentNote"
+        },
+        {
+          "title": "Content Document",
+          "value": "ContentDocument"
+        },
+        {
+          "title": "Task",
+          "value": "Task"
+        },
+        {
+          "title": "Custom Object",
+          "value": "Custom"
+        }
+      ]
+    },
+    {
+      "name": "customObjectName",
+      "title": "Custom Object Name",
+      "description": "Name of custom Salesforce object (only if 'Custom Object' is selected above)",
+      "type": "textfield",
+      "required": false,
+      "default": ""
     }
   ],
   "dependencies": {

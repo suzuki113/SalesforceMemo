@@ -64,7 +64,7 @@ After installation, you need to configure the following:
 
 ## Data Format
 
-This extension uses Salesforce's "ContentNote" object to store memos.
+By default, this extension uses Salesforce's "ContentNote" object to store memos. You can change this in the settings to use other object types like ContentDocument, Task, or a custom object of your choice.
 
 ## Notes
 
