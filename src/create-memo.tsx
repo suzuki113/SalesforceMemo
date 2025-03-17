@@ -1,15 +1,5 @@
 import React, { useState } from "react";
-import {
-  ActionPanel,
-  Form,
-  Action,
-  showToast,
-  Toast,
-  Icon,
-  Detail,
-  useNavigation,
-  List,
-} from "@raycast/api";
+import { ActionPanel, Form, Action, showToast, Toast, Icon, Detail, useNavigation, List } from "@raycast/api";
 import { SalesforceService, MemoFileService, SalesforceRecord } from "./utils/salesforce";
 
 export default function CreateMemo() {
@@ -246,8 +236,8 @@ function MemoDetail({
 
       // Salesforceにメモを作成
       const memoId = await salesforceService.createMemoRecord(
-        originalData.title || title,
-        originalData.content || content,
+        (originalData as any).title || title,
+        (originalData as any).content || content,
         relatedRecord?.Id,
       );
 
@@ -284,32 +274,32 @@ function MemoDetail({
         return `# ${title}\n\n${content}\n\n---\n\n**ファイル保存場所**: ${filePath}\n${relatedRecord ? `**関連レコード**: ${relatedRecord.Type} - ${relatedRecord.Name} (${relatedRecord.Id})` : ""}`;
       }
 
-      const jsonTitle = originalData.title || title;
-      const jsonContent = originalData.content || content;
-      const metadata = originalData.metadata || {};
+      const jsonTitle = (originalData as any).title || title;
+      const jsonContent = (originalData as any).content || content;
+      const metadata = (originalData as any).metadata || {};
 
       // メタデータセクション
       let metadataSection = "";
-      if (relatedRecord || metadata.sfId) {
+      if (relatedRecord || (metadata as any).sfId) {
         metadataSection += `\n\n## 関連レコード情報\n`;
         if (relatedRecord) {
           metadataSection += `- **タイプ**: ${relatedRecord.Type || "不明"}\n`;
           metadataSection += `- **名前**: ${relatedRecord.Name || "不明"}\n`;
           metadataSection += `- **ID**: ${relatedRecord.Id}\n`;
-        } else if (metadata.sfId) {
-          metadataSection += `- **タイプ**: ${metadata.sfType || "不明"}\n`;
-          metadataSection += `- **名前**: ${metadata.sfName || "不明"}\n`;
-          metadataSection += `- **ID**: ${metadata.sfId}\n`;
+        } else if ((metadata as any).sfId) {
+          metadataSection += `- **タイプ**: ${(metadata as any).sfType || "不明"}\n`;
+          metadataSection += `- **名前**: ${(metadata as any).sfName || "不明"}\n`;
+          metadataSection += `- **ID**: ${(metadata as any).sfId}\n`;
         }
       }
 
       // 作成・更新日時
       let dateSection = "\n\n## 日時情報\n";
-      if (metadata.createdAt) {
-        dateSection += `- **作成日時**: ${new Date(metadata.createdAt).toLocaleString()}\n`;
+      if ((metadata as any).createdAt) {
+        dateSection += `- **作成日時**: ${new Date((metadata as any).createdAt).toLocaleString()}\n`;
       }
-      if (metadata.updatedAt) {
-        dateSection += `- **更新日時**: ${new Date(metadata.updatedAt).toLocaleString()}\n`;
+      if ((metadata as any).updatedAt) {
+        dateSection += `- **更新日時**: ${new Date((metadata as any).updatedAt).toLocaleString()}\n`;
       }
 
       return `# ${jsonTitle}\n\n${jsonContent}\n\n---\n\n**ファイル保存場所**: ${filePath}\n${relatedRecord ? `**関連レコード**: ${relatedRecord.Type} - ${relatedRecord.Name} (${relatedRecord.Id})` : ""}\n${metadataSection}\n${dateSection}`;
@@ -324,8 +314,6 @@ function MemoDetail({
       markdown={createMarkdownContent()}
       actions={
         <ActionPanel>
-          <Action.SubmitForm title="メモを保存" onSubmit={handleSubmit} icon={Icon.Document} />
-          <Action title="関連レコードを選択" onAction={handleRecordSelect} icon={Icon.Link} />
           <Action title="Salesforceに送信" onAction={uploadToSalesforce} icon={Icon.Upload} />
         </ActionPanel>
       }
