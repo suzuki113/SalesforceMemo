@@ -52,10 +52,8 @@ export default function CreateMemo() {
   const selectRecord = (record: SalesforceRecord) => {
     console.log("メイン画面でレコード設定:", record);
     setRelatedRecord(record);
-    // 設定後の値をログに出力して確認
-    setTimeout(() => {
-      console.log("メイン画面でレコード設定後:", { record });
-    }, 100);
+    // 直接ログ出力（setTimeout不要）
+    console.log("メイン画面でレコード選択完了:", { record });
   };
 
   const handleSubmit = async (values: { title: string; content: string }) => {
@@ -211,12 +209,9 @@ function RecordSearch({
         message: `[${record.Type}] ${record.Name}`,
       });
 
-      // 少し待機して確実にレコード情報が設定されるようにする
-      setTimeout(() => {
-        // 前の画面（メモ作成画面）に戻る
-        console.log("前の画面に戻ります");
-        pop();
-      }, 300);
+      // 前の画面に即時に戻る
+      console.log("前の画面に戻ります");
+      pop();
     } catch (error) {
       console.error("レコード選択エラー:", error);
       await showToast({
