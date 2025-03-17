@@ -92,10 +92,6 @@ export default function ViewMemos() {
             if (title.length === 0) {
               title = filename;
             }
-            // Output byte representation of title for debugging
-            console.log(
-              `Title "${title}" byte length: ${Buffer.from(title).length}`,
-            );
           }
 
           memoItems.push({
@@ -266,8 +262,6 @@ function MemoDetail({ memo }: { memo: MemoItem }) {
         throw new Error("Failed to load memo data");
       }
 
-      console.log("Memo data before sending to Salesforce:", originalData);
-
       // Safely validate and use memo data with type guard
       if (!isMemoData(originalData)) {
         throw new Error("Invalid memo data format");
@@ -287,9 +281,6 @@ function MemoDetail({ memo }: { memo: MemoItem }) {
 
       // After successful sending, update sync status
       const updated = await memoFileService.updateSyncStatus(memo.path, memoId);
-      if (updated) {
-        console.log("Sync status updated:", memoId);
-      }
 
       await showToast({
         style: Toast.Style.Success,
@@ -373,7 +364,6 @@ function EditMemo({ memo }: { memo: MemoItem }) {
 
   // Record selection handler
   const selectRecord = (record: SalesforceRecord) => {
-    console.log("Record selected in memo edit screen:", record);
     setRelatedRecord(record);
   };
 
@@ -432,9 +422,6 @@ function EditMemo({ memo }: { memo: MemoItem }) {
 
       // Save to the same file path
       await fs.promises.writeFile(memo.path, fileContent, { encoding: "utf8" });
-
-      // Confirm file write
-      console.log(`Memo update completed: ${memo.path} (JSON format)`);
 
       await showToast({
         style: Toast.Style.Success,
@@ -558,11 +545,9 @@ function RecordSearch({
   }, [searchText]);
 
   const handleRecordSelection = async (record: SalesforceRecord) => {
-    console.log("Record selection process started:", record);
     try {
       // Execute record selection
       onRecordSelect(record);
-      console.log("Record selection completed");
 
       // Success message
       await showToast({
@@ -574,7 +559,6 @@ function RecordSearch({
       // Wait a bit to ensure record info is set
       setTimeout(() => {
         // Return to previous screen (memo edit screen)
-        console.log("Returning to previous screen");
         pop();
       }, 300);
     } catch (error) {

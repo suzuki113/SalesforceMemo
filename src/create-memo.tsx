@@ -63,10 +63,7 @@ export default function CreateMemo() {
   };
 
   const selectRecord = (record: SalesforceRecord) => {
-    console.log("Record selected in main screen:", record);
     setRelatedRecord(record);
-    // Direct log output (no setTimeout needed)
-    console.log("Record selection completed in main screen:", { record });
   };
 
   const handleSubmit = async (values: { title: string; content: string }) => {
@@ -209,11 +206,9 @@ function RecordSearch({
   }, [searchText]);
 
   const handleRecordSelection = async (record: SalesforceRecord) => {
-    console.log("Record selection process started:", record);
     try {
       // Execute record selection
       onRecordSelect(record);
-      console.log("Record selection completed");
 
       // Success message
       await showToast({
@@ -222,9 +217,11 @@ function RecordSearch({
         message: `[${record.Type}] ${record.Name}`,
       });
 
-      // Return to previous screen immediately
-      console.log("Returning to previous screen");
-      pop();
+      // Wait a bit to ensure record info is set
+      setTimeout(() => {
+        // Return to previous screen
+        pop();
+      }, 300);
     } catch (error) {
       console.error("Record selection error:", error);
       await showToast({
@@ -311,8 +308,6 @@ function MemoDetail({
         throw new Error("Failed to load memo data");
       }
 
-      console.log("Memo data before sending to Salesforce:", originalData);
-
       // Safely validate and use memo data with type guard
       if (!isMemoData(originalData)) {
         throw new Error("Invalid memo data format");
@@ -326,9 +321,6 @@ function MemoDetail({
 
       // After successful sending, update sync status
       const updated = await memoFileService.updateSyncStatus(filePath, memoId);
-      if (updated) {
-        console.log("Sync status updated:", memoId);
-      }
 
       await showToast({
         style: Toast.Style.Success,

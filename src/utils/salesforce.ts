@@ -96,20 +96,13 @@ export class SalesforceService {
           "Accept-Charset": "utf-8",
           "Content-Type": "application/json; charset=utf-8",
         };
-
-        // APIバージョン情報をログに出力（デバッグ用）
-        console.log("Salesforce API接続設定完了");
       }
 
       // ログイン処理
-      console.log("Salesforceログイン開始");
       await this.conn.login(
         credentials.username,
         credentials.password + (credentials.securityToken || ""),
       );
-
-      // 接続成功後にログ出力
-      console.log("Salesforceに接続しました。");
 
       return true;
     } catch (error) {
@@ -136,11 +129,8 @@ export class SalesforceService {
       const records: SalesforceRecord[] = [];
 
       if (result.searchRecords) {
-        console.log("検索結果:", JSON.stringify(result.searchRecords, null, 2));
-
         for (const record of result.searchRecords as SalesforceRecordData[]) {
           // SOSLの結果には各レコードのオブジェクト型を表す属性が含まれているはず
-          console.log("レコード詳細:", JSON.stringify(record, null, 2));
 
           // 改善: 複数の方法でオブジェクト型を特定
           let objectType = "";
@@ -196,28 +186,18 @@ export class SalesforceService {
     if (!this.conn) {
       const connected = await this.connect();
       if (!connected) {
-        throw new Error("Salesforceに接続できませんでした。");
+        throw new Error("Failed to connect to Salesforce.");
       }
     }
 
     try {
-      console.log("Salesforceメモ作成開始:", {
-        subject,
-        bodyLength: body.length,
-        relatedRecordId,
-      });
-
       // 文字化け防止のための処理
       // タイトルと本文をエンコードして送信
       const safeSubject = subject.trim();
       const safeBody = body.trim();
 
-      console.log(`タイトル長: ${Buffer.from(safeSubject).length} バイト`);
-      console.log(`本文長: ${Buffer.from(safeBody).length} バイト`);
-
       // Salesforceオブジェクトの作成
       const objectName = this.getSalesforceObjectName();
-      console.log(`${objectName}レコード作成準備`);
 
       // Salesforceオブジェクトのフィールド
       const memoData: Record<string, string> = {
@@ -227,28 +207,16 @@ export class SalesforceService {
       // 本文をBase64でエンコード（日本語文字の文字化け対策）
       try {
         // すべてのメモコンテンツをBase64エンコードして設定
-        console.log("コンテンツをBase64エンコードします");
         const contentBuffer = Buffer.from(safeBody, "utf8");
         memoData.Content = contentBuffer.toString("base64");
-        console.log("Base64エンコード完了:", {
-          contentLengthBefore: safeBody.length,
-          contentLengthAfter: memoData.Content.length,
-        });
       } catch (encodeError) {
         console.error("Base64エンコードエラー:", encodeError);
         // エンコードエラーの場合は直接テキストを設定（フォールバック）
         memoData.Content = safeBody;
       }
 
-      // Salesforce API実行時の詳細ログ
-      console.log(`${objectName}作成リクエスト準備:`, {
-        title: memoData.Title,
-        contentLength: memoData.Content?.length,
-      });
-
       // Salesforceレコード作成
       const result = await this.conn!.sobject(objectName).create(memoData);
-      console.log(`${objectName}作成レスポンス:`, JSON.stringify(result));
 
       if (result.success) {
         // 関連レコードがある場合はContentDocumentLinkを作成
@@ -260,11 +228,6 @@ export class SalesforceService {
               objectName === "ContentDocument"
             ) {
               // ContentDocumentLinkオブジェクトを作成して関連付け
-              console.log("ContentDocumentLink作成開始:", {
-                contentDocumentId: result.id,
-                linkedEntityId: relatedRecordId,
-              });
-
               const linkData = {
                 ContentDocumentId: result.id,
                 LinkedEntityId: relatedRecordId,
@@ -274,10 +237,6 @@ export class SalesforceService {
               const linkResult = await this.conn!.sobject(
                 "ContentDocumentLink",
               ).create(linkData);
-              console.log(
-                "ContentDocumentLink creation result:",
-                JSON.stringify(linkResult),
-              );
 
               if (!linkResult.success) {
                 console.error(
@@ -294,12 +253,8 @@ export class SalesforceService {
                 Id: result.id,
                 WhatId: relatedRecordId,
               });
-              console.log("Task関連付け完了:", relatedRecordId);
             } else {
               // カスタムオブジェクトの場合は必要に応じて関連付けロジックを実装
-              console.log(
-                "カスタムオブジェクトの関連付けはサポートされていません",
-              );
             }
           } catch (linkError) {
             console.error("関連レコードのリンク作成エラー:", linkError);
@@ -374,9 +329,6 @@ export class MemoFileService {
     // UTF-8で保存
     await fs.promises.writeFile(filePath, jsonContent, { encoding: "utf8" });
 
-    // ファイル書き込み後に確認
-    console.log(`JSONファイル保存完了: ${filePath} (UTF-8形式)`);
-
     return filePath;
   }
 
@@ -396,9 +348,6 @@ export class MemoFileService {
       // UTF-8で読み込み
       const fileContent = fs.readFileSync(filePath, { encoding: "utf8" });
 
-      // デバッグ情報
-      console.log(`ファイル読み込み: ${filePath} (UTF-8形式)`);
-
       // BOMがある場合は除去
       const content =
         fileContent.charCodeAt(0) === 0xfeff
@@ -408,13 +357,6 @@ export class MemoFileService {
       // JSONデータを解析
       try {
         const memoData = JSON.parse(content);
-        console.log("JSONデータを解析しました:", {
-          title: memoData.title,
-          contentLength: memoData.content?.length,
-          metadata: memoData.metadata,
-        });
-
-        // マークダウン形式に変換して返す（表示用）
         return {
           content: `# ${memoData.title}\n\n${memoData.content || ""}`,
           metadata: memoData.metadata || {},
@@ -437,9 +379,6 @@ export class MemoFileService {
       const isJsonFile = filePath.toLowerCase().endsWith(".json");
 
       if (!isJsonFile) {
-        console.log(
-          "Markdownファイルの同期ステータス更新はサポートしていません",
-        );
         return false;
       }
 
@@ -466,9 +405,6 @@ export class MemoFileService {
           encoding: "utf8",
         });
 
-        console.log(
-          `同期ステータスを更新しました: ${filePath}, sfNoteId=${sfNoteId}`,
-        );
         return true;
       } catch (jsonError) {
         console.error("JSON更新エラー:", jsonError);
