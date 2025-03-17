@@ -86,6 +86,14 @@
       "type": "textfield",
       "required": false,
       "default": ""
+    },
+    {
+      "name": "searchTargetObjects",
+      "title": "Search Target Objects",
+      "description": "Salesforce objects to search (format: Object1(Id,Name), Object2(Id,Name))",
+      "type": "textfield",
+      "required": false,
+      "default": "CS__c(Id, Name), Contact(Id, Name), Opportunity(Id, Name), Lead(Id, Name), Account(Id, Name), Case(Id, Name)"
     }
   ],
   "dependencies": {

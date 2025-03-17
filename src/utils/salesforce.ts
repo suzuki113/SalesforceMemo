@@ -8,6 +8,7 @@ interface Preferences {
   memoDirectory: string;
   salesforceObjectType: string;
   customObjectName: string;
+  searchTargetObjects: string;
 }
 
 interface SalesforceCredentials {
@@ -126,8 +127,16 @@ export class SalesforceService {
     await this.ensureConnection();
 
     try {
+      // 設定から検索対象オブジェクトを取得
+      const searchTargets = this.preferences.searchTargetObjects || 
+        "CS__c(Id, Name), Contact(Id, Name), Opportunity(Id, Name), Lead(Id, Name), Account(Id, Name), Case(Id, Name)";
+      
+      // デバッグ用: 設定値を確認
+      console.log("検索対象設定値:", this.preferences.searchTargetObjects);
+      console.log("使用する検索対象:", searchTargets);
+      
       const result = await this.conn!.search(
-        `FIND {${searchTerm}} IN ALL FIELDS RETURNING CS__c(Id, Name), Contact(Id, Name), Opportunity(Id, Name), Lead(Id, Name)`,
+        `FIND {${searchTerm}} IN ALL FIELDS RETURNING ${searchTargets}`,
       );
 
       // 検索結果を統合して返す
