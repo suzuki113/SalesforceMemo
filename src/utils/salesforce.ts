@@ -438,7 +438,9 @@ export class MemoFileService {
       }
 
       // ファイル読み込み
-      const fileContent = await fs.promises.readFile(filePath, { encoding: "utf8" });
+      const fileContent = await fs.promises.readFile(filePath, {
+        encoding: "utf8",
+      });
       const content =
         fileContent.charCodeAt(0) === 0xfeff
           ? fileContent.substring(1)
@@ -454,7 +456,9 @@ export class MemoFileService {
 
         // 更新したデータを保存
         const updatedContent = JSON.stringify(memoData, null, 2);
-        await fs.promises.writeFile(filePath, updatedContent, { encoding: "utf8" });
+        await fs.promises.writeFile(filePath, updatedContent, {
+          encoding: "utf8",
+        });
 
         console.log(
           `同期ステータスを更新しました: ${filePath}, sfNoteId=${sfNoteId}`,

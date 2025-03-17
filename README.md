@@ -10,7 +10,7 @@ This extension allows you to easily create and view memos from Raycast and sync 
 
 ## Installation
 
-### From Raycast Store (Recommended)
+### From Raycast Store
 
 1. Open Raycast
 2. Search for "Salesforce Memo"
