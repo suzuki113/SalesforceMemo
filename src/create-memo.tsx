@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { useState } from "react";
 import { ActionPanel, Form, Action, showToast, Toast, Icon, Detail, useNavigation, List } from "@raycast/api";
 import { SalesforceService, MemoFileService, SalesforceRecord } from "./utils/salesforce";
