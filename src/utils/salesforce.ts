@@ -34,11 +34,11 @@ export class SalesforceService {
   // 使用するSalesforceオブジェクトの名前を取得
   private getSalesforceObjectName(): string {
     const { salesforceObjectType, customObjectName } = this.preferences;
-    
+
     if (salesforceObjectType === "Custom" && customObjectName) {
       return customObjectName;
     }
-    
+
     return salesforceObjectType || "ContentNote"; // デフォルトはContentNote
   }
 
@@ -186,7 +186,7 @@ export class SalesforceService {
       console.log(`${objectName}レコード作成準備`);
 
       // Salesforceオブジェクトのフィールド
-      const memoData: any = {
+      const memoData: Record<string, string> = {
         Title: safeSubject,
       };
 
@@ -244,7 +244,7 @@ export class SalesforceService {
               // Taskの場合はWhatIdを使用して関連付け
               await this.conn!.sobject("Task").update({
                 Id: result.id,
-                WhatId: relatedRecordId
+                WhatId: relatedRecordId,
               });
               console.log("Task関連付け完了:", relatedRecordId);
             } else {
@@ -291,7 +291,7 @@ export class MemoFileService {
     const filePath = path.join(memoDir, fileName);
 
     // JSONデータ構造を作成
-    const memoData: any = {
+    const memoData: Record<string, unknown> = {
       title: title,
       content: content,
       metadata: {
@@ -306,7 +306,7 @@ export class MemoFileService {
     // 関連レコードがある場合は追加
     if (relatedRecord) {
       memoData.metadata = {
-        ...memoData.metadata,
+        createdAt: (memoData.metadata as { createdAt: string }).createdAt,
         sfId: relatedRecord.Id,
         sfName: relatedRecord.Name,
         sfType: relatedRecord.Type,
@@ -326,7 +326,7 @@ export class MemoFileService {
   }
 
   // 保存済みのメモを読み込む（JSON形式のみに対応）
-  readMemo(filePath: string): { content: string; metadata: any; originalData?: any } {
+  readMemo(filePath: string): { content: string; metadata: Record<string, unknown>; originalData?: Record<string, unknown> } {
     try {
       // ファイル拡張子を確認
       if (!filePath.toLowerCase().endsWith(".json")) {
