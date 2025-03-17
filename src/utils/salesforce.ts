@@ -111,14 +111,19 @@ export class SalesforceService {
     }
   }
 
-  // レコード検索
-  async searchRecords(searchTerm: string): Promise<SalesforceRecord[]> {
+  // 接続の確認と必要に応じて接続を確立する
+  async ensureConnection(): Promise<void> {
     if (!this.conn) {
       const connected = await this.connect();
       if (!connected) {
-        throw new Error("Salesforceに接続できませんでした。");
+        throw new Error("Failed to connect to Salesforce.");
       }
     }
+  }
+
+  // レコード検索
+  async searchRecords(searchTerm: string): Promise<SalesforceRecord[]> {
+    await this.ensureConnection();
 
     try {
       const result = await this.conn!.search(
@@ -183,12 +188,7 @@ export class SalesforceService {
     body: string,
     relatedRecordId?: string,
   ): Promise<string> {
-    if (!this.conn) {
-      const connected = await this.connect();
-      if (!connected) {
-        throw new Error("Failed to connect to Salesforce.");
-      }
-    }
+    await this.ensureConnection();
 
     try {
       // 文字化け防止のための処理
