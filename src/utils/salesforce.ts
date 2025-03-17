@@ -275,12 +275,13 @@ export class SalesforceService {
                 "ContentDocumentLink",
               ).create(linkData);
               console.log(
-                "ContentDocumentLink作成結果:",
+                "ContentDocumentLink creation result:",
                 JSON.stringify(linkResult),
               );
 
               if (!linkResult.success) {
-                console.error("関連レコードのリンク作成に失敗:", linkResult);
+                console.error("Failed to create related record link:", linkResult);
+                throw new Error("Failed to create relationship between memo and record");
               }
             } else if (objectName === "Task") {
               // Taskの場合はWhatIdを使用して関連付け
